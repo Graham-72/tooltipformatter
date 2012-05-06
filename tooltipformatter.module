@@ -1,0 +1,112 @@
+<?php
+/**
+ * @file
+ * Defines a formatter for text fields that displays an icon which triggers
+ * a tooltip.
+ *
+ */
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function tooltipformatter_field_formatter_info() {
+  return array(
+    'tooltipformatter_formatter' => array(
+      'label' => t('Tooltip'),
+      'field types' => array('text', 'text_long'),
+      'settings'  => array(
+        'icon' => 'info',
+        'icon_size' => '24',
+        'event' => 'hover',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function tooltipformatter_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $element = array();
+  $element['icon'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Icon'),
+    '#description'   => t('Choose the icon that triggers the tooltip.'),
+    '#default_value' => $settings['icon'],
+    '#options'       => array(
+      'info'    => 'Info',
+      'help'    => 'Help',
+      'warning' => 'Warning',
+      'ok'      => 'OK',
+      'error'   => 'Error',
+    ),
+  );
+  $element['icon_size'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Icon size'),
+    '#description'   => t('Select the icon size.'),
+    '#default_value' => $settings['icon_size'],
+    '#options'       => array(
+      '16' => '16 px',
+      '24' => '24 px',
+    ),
+  );
+  $element['event'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Event'),
+    '#description'   => t('Select the event that will trigger the tooltip.'),
+    '#default_value' => $settings['event'],
+    '#options'       => array(
+      'hover' => 'Hover',
+      'click' => 'Click',
+    ),
+  );
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function tooltipformatter_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $summary = t('Display a @icon icon and show the tooltip on @event.', array(
+    '@icon'  => $settings['icon'],
+    '@event' => $settings['event'],
+  ));
+  return $summary;
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function tooltipformatter_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+  $icon = $settings['icon'];
+  $icon_size = $settings['icon_size'];
+  $event = $settings['event'];
+  $image_path = base_path() .'misc/message-'. $icon_size .'-'. $icon .'.png';
+  foreach ($items as $delta => $item) {
+    $element[$delta] = array(
+      '#theme'      => 'image',
+      '#path'       => $image_path,
+      '#title'      => $item['safe_value'],
+      '#alt'        => $icon,
+      '#attributes' => array(
+        'class' => 'tooltipformatter',
+      ),
+    );
+  }
+
+  $options['tooltipformatter'] = array(
+    'cssSelect' => 'img.tooltipformatter',
+    'trigger'   => array($event, $event),
+  );
+  beautytips_add_beautytips($options);
+
+  return $element;
+}
+

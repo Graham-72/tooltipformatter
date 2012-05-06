@@ -1,0 +1,5 @@
+name = Tooltip Field Formatter
+description = "A formatter that renders the field contents as a tooltip"
+core = 7.x
+files[] = tooltipformatter.module
+dependencies[] = beautytips
